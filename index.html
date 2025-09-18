@@ -890,9 +890,13 @@
         creator: 'Framed Wall Materials Calculator'
     });
 
+    // Set uniform font to Arial Narrow
+    doc.addFont('helvetica', 'Arial Narrow', 'normal');
+    doc.setFont('Arial Narrow');
+
     doc.setFontSize(18);
     doc.setTextColor(40, 40, 40);
-    doc.text('Framed Wall Materials Calculator Results', 105, 20, { align: 'center' });
+    doc.text('Framed Wall Materials Calculator', 105, 20, { align: 'center' });
 
     doc.setDrawColor(200, 200, 200);
     doc.line(10, 25, 200, 25);
@@ -935,8 +939,9 @@
         head: wallParamsTable.head,
         body: wallParamsTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
-        styles: { fontSize: 10, cellPadding: 3 },
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' },
+        bodyStyles: { font: 'Arial Narrow' },
+        styles: { fontSize: 10, cellPadding: 3, font: 'Arial Narrow' },
         margin: { left: 10, right: 10 }
     });
 
@@ -964,8 +969,9 @@
         head: materialsTable.head,
         body: materialsTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
-        styles: { fontSize: 10, cellPadding: 3 },
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' },
+        bodyStyles: { font: 'Arial Narrow' },
+        styles: { fontSize: 10, cellPadding: 3, font: 'Arial Narrow' },
         margin: { left: 10, right: 10 }
     });
 
@@ -994,8 +1000,9 @@
         head: accessoriesTable.head,
         body: accessoriesTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
-        styles: { fontSize: 10, cellPadding: 3 },
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' },
+        bodyStyles: { font: 'Arial Narrow' },
+        styles: { fontSize: 10, cellPadding: 3, font: 'Arial Narrow' },
         margin: { left: 10, right: 10 }
     });
 
@@ -1027,10 +1034,11 @@
         head: costTable.head,
         body: costTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
-        styles: { fontSize: 10, cellPadding: 3 },
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' },
+        bodyStyles: { font: 'Arial Narrow' },
+        styles: { fontSize: 10, cellPadding: 3, font: 'Arial Narrow' },
         margin: { left: 10, right: 10 },
-        footStyles: { fillColor: [44, 62, 80], textColor: 255, fontStyle: 'bold' }
+        footStyles: { fillColor: [44, 62, 80], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' }
     });
 
     y = doc.lastAutoTable.finalY + 10;
@@ -1060,19 +1068,25 @@
         head: laborDetailsTable.head,
         body: laborDetailsTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
-        styles: { fontSize: 10, cellPadding: 3 },
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' },
+        bodyStyles: { font: 'Arial Narrow' },
+        styles: { fontSize: 10, cellPadding: 3, font: 'Arial Narrow' },
         margin: { left: 10, right: 10 }
     });
 
     y = doc.lastAutoTable.finalY + 10;
 
+    // Add footer on each page
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
-        doc.setFontSize(10);
+        doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
-        doc.text(`Page ${i} of ${pageCount}`, 200, 290, { align: 'right' });
+        const footerText = `Framed Wall Materials Calculator by AestimareDesign`;
+        const pageText = `Page ${i} of ${pageCount}`;
+        const totalWidth = doc.getTextWidth(footerText) + doc.getTextWidth(pageText) + 10; // Add spacing
+        doc.text(footerText, 105 - (totalWidth / 2), 290, { align: 'left' });
+        doc.text(pageText, 105 + (totalWidth / 2), 290, { align: 'right' });
         doc.text(`Generated on ${new Date().toLocaleDateString()}`, 10, 290);
     }
 
