@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Framed Wall Materials Calculator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-gray: #ecf0f1;
+            --medium-gray: #bdc3c7;
+            --dark-gray: #7f8c8d;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .wall-calculator * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .wall-calculator {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            display: flex;
+            gap: 30px;
+        }
+        .calculator-form {
+            flex: 2;
+            min-width: 0;
+        }
+        .guidelines {
+            flex: 1;
+            max-width: 450px;
+            background: var(--light-gray);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        .wall-calculator h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+            font-size: 28px;
+            font-weight: 600;
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 10px;
+        }
+        .wall-calculator h2 {
+            color: var(--primary-color);
+            font-size: 18px;
+            font-weight: 600;
+            margin: 25px 0 15px;
+            border-bottom: 1px solid var(--medium-gray);
+            padding-bottom: 8px;
+        }
+        .wall-calculator h3 {
+            color: var(--primary-color);
+            font-size: 16px;
+            font-weight: 600;
+            margin: 20px 0 12px;
+        }
+        .wall-calculator form {
+            display: grid;
+            gap: 18px;
+        }
+        .wall-calculator label {
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+        .wall-calculator input, .wall-calculator select {
+            padding: 12px;
+            margin-top: 6px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 6px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+        .wall-calculator input:focus, .wall-calculator select:focus {
+            border-color: var(--secondary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+        .download-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .wall-calculator button {
+            background-color: var(--secondary-color);
+            color: var(--white);
+            padding: 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        .wall-calculator button:hover:not(:disabled) {
+            background-color: #2980b9;
+        }
+        .results {
+            margin-top: 25px;
+            padding: 20px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            background-color: var(--light-gray);
+        }
+        .error {
+            color: var(--accent-color);
+            font-weight: 600;
+            font-size: 14px;
+            background-color: rgba(231, 76, 60, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+        .results p {
+            margin: 10px 0;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .results p strong {
+            color: var(--primary-color);
+            min-width: 200px;
+            font-weight: 600;
+        }
+        .results .value {
+            text-align: right;
+            font-weight: 500;
+        }
+        .guidelines p, .guidelines li {
+            font-size: 14px;
+            color: var(--primary-color);
+            line-height: 1.6;
+        }
+        .guidelines .formula {
+            font-family: 'Courier New', Courier, monospace;
+            background: var(--white);
+            padding: 8px 12px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 6px;
+            margin: 8px 0;
+            display: inline-block;
+            font-size: 13px;
+        }
+        .cost-summary {
+            margin-top: 20px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+        .cost-summary table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .cost-summary th {
+            background-color: var(--primary-color);
+            color: var(--white);
+            padding: 12px;
+            text-align: left;
+        }
+        .cost-summary td {
+            padding: 12px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        .cost-summary tr:last-child td {
+            border-bottom: none;
+            font-weight: 600;
+            background-color: rgba(44, 62, 80, 0.05);
+        }
+        .cost-summary .cost-value {
+            text-align: right;
+            font-weight: 600;
+        }
+        .material-card {
+            background: var(--light-gray);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--secondary-color);
+        }
+        .material-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .remove-material {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .add-material-btn {
+            background: var(--success-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .side-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .side-box {
+            border: 1px solid var(--medium-gray);
+            padding: 15px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.7);
+        }
+        .side-box label {
+            margin-bottom: 10px;
+        }
+        .formula-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .formula-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+        .formula-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            position: relative;
+        }
+        .formula-item:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--secondary-color);
+        }
+        .cost-per-sqm {
+            font-size: 12px;
+            color: var(--dark-gray);
+            margin-top: 4px;
+        }
+        .side-plies {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 4px;
+            border-left: 2px solid var(--secondary-color);
+        }
+        .side-plies label {
+            font-size: 13px;
+        }
+        .side-plies input {
+            width: 60px !important;
+        }
+        @media (max-width: 1000px) {
+            .wall-calculator {
+                flex-direction: column;
+                margin: 10px;
+                padding: 20px;
+            }
+            .calculator-form, .guidelines {
+                max-width: 100%;
+            }
+            .download-buttons {
+                flex-direction: column;
+            }
+            .wall-calculator button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="wall-calculator">
+        <div class="calculator-form">
+            <h1>Framed Wall Materials Calculator</h1>
+            <form id="calculatorForm">
+                <div class="tab-container">
+                    <div class="tab active" data-tab="project">Project Info</div>
+                    <div class="tab" data-tab="materials">Materials</div>
+                    <div class="tab" data-tab="costs">Costs</div>
+                </div>
+                <div class="tab-content active" id="project-tab">
+                    <h2>Project Information</h2>
+                    <label>Project Name: <input type="text" id="projectName" value="Office Renovation" title="Name of the project" required></label>
+                    <label>Project Location: <input type="text" id="projectLocation" value="Manila" title="Location of the project" required></label>
+                    <label>Client Name: <input type="text" id="clientName" value="John Dela Cruz" title="Name of the client" required></label>
+                    <label>Client Company: <input type="text" id="companyName" value="Quality Builders Inc." title="Name of the client company" required></label>
+                    <label>Date: <input type="date" id="date" value="2025-09-18" title="Date of estimation" required></label>
+                    <label>Prepared By: <input type="text" id="preparedBy" value="Maria Santos" title="Name of the estimator" required></label>
+                    <h2>Wall Parameters</h2>
+                    <label>Length (m): <input type="number" id="length" step="0.01" min="0.01" value="10" title="Length of the wall in meters" required></label>
+                    <label>Height (m): <input type="number" id="height" step="0.01" min="0.01" value="3" title="Height of the wall in meters" required></label>
+                    <label>Door Area (m²): <input type="number" id="doorArea" step="0.01" min="0" value="0" title="Total area of doors" required></label>
+                    <label>Window Area (m²): <input type="number" id="windowArea" step="0.01" min="0" value="0" title="Total area of windows" required></label>
+                </div>
+                <div class="tab-content" id="materials-tab">
+                    <h2>Material Layers</h2>
+                    <div id="materials-container"></div>
+                    <button type="button" class="add-material-btn" onclick="addMaterial()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="fill: white;"><path d="M12 4C11.4477 4 11 4.44772 11 5V11H5C4.44772 11 4 11.4477 4 12C4 12.5523 4.44772 13 5 13H11V19C11 19.5523 11.4477 20 12 20C12.5523 20 13 19.5523 13 19V13H19C19.5523 13 20 12.5523 20 12C20 11.4477 19.5523 11 19 11H13V5C13 4.44772 12.5523 4 12 4Z"/></svg>
+                        Add Material Layer
+                    </button>
+                </div>
+                <div class="tab-content" id="costs-tab">
+                    <h2>Cost Parameters</h2>
+                    <label>Currency:
+                        <select id="currency" title="Select the currency for cost estimation">
+                            <option value="PHP">PHP (₱)</option>
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="JPY">JPY (¥)</option>
+                        </select>
+                    </label>
+                    <h3>Material and Accessory Costs</h3>
+                    <label>Stud Cost (per m): <input type="number" id="studCost" step="0.01" min="0" value="150" title="Cost per meter of stud"></label>
+                    <label>Track Cost (per m): <input type="number" id="trackCost" step="0.01" min="0" value="120" title="Cost per meter of track"></label>
+                    <label>Screw Cost (per piece): <input type="number" id="screwCost" step="0.01" min="0" value="1.5" title="Cost per piece of screw"></label>
+                    <label>Joint Compound Cost (per kg): <input type="number" id="jointCompoundCost" step="0.01" min="0" value="50" title="Cost per kg of joint compound"></label>
+                    <label>Sealant Cost (per tube): <input type="number" id="sealantCost" step="0.01" min="0" value="200" title="Cost per tube of sealant"></label>
+                    <h3>Labor & Contingency Costs</h3>
+                    <label>Labor Cost (per m²): <input type="number" id="laborCost" step="0.01" min="0" value="350" title="Cost of labor per square meter of wall area"></label>
+                    <label>Number of Laborers: <input type="number" id="laborers" step="1" min="1" value="4" title="Number of laborers for the project" required></label>
+                    <label>Contingency (%): <input type="number" id="contingency" step="1" min="0" max="20" value="10" title="Percentage for unexpected costs" required></label>
+                    <label>Preparation Time (days): <input type="number" id="prepTime" step="0.01" min="0" value="0.5" title="Preparation time in days" required></label>
+                    <label>Cleanup Time (days): <input type="number" id="cleanupTime" step="0.01" min="0" value="0.5" title="Cleanup time in days" required></label>
+                    <h3>Additional Costs</h3>
+                    <label>Overhead (%): <input type="number" id="overheadPercent" step="1" min="0" max="100" value="0" title="Overhead percentage" required></label>
+                    <label>Equipment (%): <input type="number" id="equipmentPercent" step="1" min="0" max="100" value="0" title="Equipment percentage" required></label>
+                    <label>Profit Margin (%): <input type="number" id="profitMargin" step="1" min="0" max="100" value="0" title="Profit margin percentage" required></label>
+                </div>
+                <button type="submit" id="calculateButton">Calculate</button>
+            </form>
+            <div id="results" class="results" style="display:none;">
+                <h2>Calculation Results</h2>
+                <div id="message"></div>
+                <h3>Wall Parameters</h3>
+                <p><strong>Length:</strong> <span class="value" id="wallLengthResult"></span></p>
+                <p><strong>Height:</strong> <span class="value" id="wallHeightResult"></span></p>
+                <p><strong>Door Area:</strong> <span class="value" id="doorAreaResult"></span></p>
+                <p><strong>Window Area:</strong> <span class="value" id="windowAreaResult"></span></p>
+                <p><strong>Wall Area:</strong> <span class="value" id="wallArea"></span></p>
+                <h3>Material Summary</h3>
+                <div id="materialResults"></div>
+                <h3>Accessory Materials</h3>
+                <div id="accessoryResults"></div>
+                <h3>Labor Details</h3>
+                <p><strong>Number of Laborers:</strong> <span class="value" id="laborersResult"></span></p>
+                <p><strong>Productivity Rate:</strong> <span class="value" id="productivityRate"></span></p>
+                <p><strong>Preparation Time:</strong> <span class="value" id="prepTimeResult"></span></p>
+                <p><strong>Installation Time:</strong> <span class="value" id="installTime"></span></p>
+                <p><strong>Cleanup Time:</strong> <span class="value" id="cleanupTimeResult"></span></p>
+                <p><strong>Total Project Duration:</strong> <span class="value" id="totalDays"></span></p>
+                <div class="cost-summary">
+                    <h3>Cost Summary</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th class="cost-value">Cost</th>
+                                <th class="cost-value">Cost per m²</th>
+                            </tr>
+                        </thead>
+                        <tbody id="costTableBody">
+                            <tr>
+                                <td>Materials</td>
+                                <td class="cost-value"><span id="currencySymbolMaterial"></span><span id="materialCostResult"></span></td>
+                                <td class="cost-value"><span id="currencySymbolMaterialSqm"></span><span id="materialCostSqm"></span></td>
+                            </tr>
+                            <tr>
+                                <td>Accessories</td>
+                                <td class="cost-value"><span id="currencySymbolAccessory"></span><span id="accessoryCostResult"></span></td>
+                                <td class="cost-value"><span id="currencySymbolAccessorySqm"></span><span id="accessoryCostSqm"></span></td>
+                            </tr>
+                            <tr>
+                                <td>Labor</td>
+                                <td class="cost-value"><span id="currencySymbolLabor"></span><span id="laborCostResult"></span></td>
+                                <td class="cost-value"><span id="currencySymbolLaborSqm"></span><span id="laborCostSqm"></span></td>
+                            </tr>
+                            <tr id="contingencyCostRow">
+                                <td>Contingency</td>
+                                <td class="cost-value"><span id="currencySymbolContingency"></span><span id="contingencyCostResult"></span></td>
+                                <td class="cost-value"><span id="currencySymbolContingencySqm"></span><span id="contingencyCostSqm"></span></td>
+                            </tr>
+                            <tr>
+                                <td>Overhead</td>
+                                <td class="cost-value"><span id="currencySymbolOverhead"></span><span id="overheadCostResult"></span></td>
+                                <td class="cost-value"><span id="currencySymbolOverheadSqm"></span><span id="overheadCostSqm"></span></td>
+                            </tr>
+                            <tr>
+                                <td>Equipment</td>
+                                <td class="cost-value"><span id="currencySymbolEquipment"></span><span id="equipmentCostResult"></span></td>
+                                <td class="cost-value"><span id="currencySymbolEquipmentSqm"></span><span id="equipmentCostSqm"></span></td>
+                            </tr>
+                            <tr>
+                                <td>Profit</td>
+                                <td class="cost-value"><span id="currencySymbolProfit"></span><span id="profitCostResult"></span></td>
+                                <td class="cost-value"><span id="currencySymbolProfitSqm"></span><span id="profitCostSqm"></span></td>
+                            </tr>
+                            <tr>
+                                <td>Total</td>
+                                <td class="cost-value"><span id="currencySymbolTotal"></span><span id="totalCost"></span></td>
+                                <td class="cost-value"><span id="currencySymbolTotalSqm"></span><span id="totalCostSqm"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="download-buttons">
+                    <button onclick="downloadPDF()">Download as PDF</button>
+                </div>
+            </div>
+        </div>
+        <div class="guidelines">
+            <h2>Guidelines & Formulas</h2>
+            <p>This calculator estimates materials and costs for constructing framed walls based on provided parameters.</p>
+            <div class="formula-box">
+                <div class="formula-title">Wall Area & Material Quantity:</div>
+                <div class="formula-item">Wall Area = (Length × Height) - (Door Area + Window Area)</div>
+                <div class="formula-item">Material Quantity = Ceiling(Wall Area / Unit Area of Material) × (1 + Waste Factor%) × Total Plies</div>
+            </div>
+            <div class="formula-box">
+                <div class="formula-title">Accessories for Framed Walls:</div>
+                <div class="formula-item">Studs = Ceiling(Length / 0.6) × Height × Total Plies</div>
+                <div class="formula-item">Tracks = 2 × Length × Total Plies</div>
+                <div class="formula-item">Screws = Ceiling(Wall Area × 25) × Total Plies</div>
+                <div class="formula-item">Joint Compound = Wall Area × 0.5 × Total Plies</div>
+                <div class="formula-item">Sealant = Length × 0.1 × Total Plies</div>
+            </div>
+            <div class="formula-box">
+                <div class="formula-title">Labor Estimation:</div>
+                <div class="formula-item">Installation Days = Wall Area / Productivity Rate</div>
+                <div class="formula-item">Total Days = (Preparation Days + Installation Days + Cleanup Days) / Number of Laborers</div>
+            </div>
+            <div class="formula-box">
+                <div class="formula-title">Cost Estimation:</div>
+                <div class="formula-item">Material Cost = Σ(Material Quantity × Cost per Unit)</div>
+                <div class="formula-item">Accessory Cost = Σ(Accessory Quantity × Cost per Unit)</div>
+                <div class="formula-item">Labor Cost = Wall Area × Labor Cost per m²</div>
+                <div class="formula-item">Contingency Cost = (Material Cost + Accessory Cost + Labor Cost) × Contingency%</div>
+                <div class="formula-item">Overhead Cost = (Base Costs) × Overhead%</div>
+                <div class="formula-item">Equipment Cost = (Base Costs) × Equipment%</div>
+                <div class="formula-item">Profit Cost = (Base Costs + Contingency + Overhead + Equipment) × Profit Margin%</div>
+                <div class="formula-item">Total Cost = Material Cost + Accessory Cost + Labor Cost + Contingency Cost + Overhead Cost + Equipment Cost + Profit Cost</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        let resultsData = null;
+        let materialCount = 0;
+
+        const materialConfig = {
+            'gypsum': { name: 'Gypsum Board', types: ['Ordinary', 'Moisture-Resistant', 'Fire-Resistant', 'Acoustic', 'Impact-Resistant'], thicknesses: ['9', '12', '15', '16'], dimensions: ['1200 x 2400 mm', '1200 x 3000 mm'], unit: 'panels', unitArea: 2.88, productivityRate: 12, accessories: { studs: true, tracks: true, screws: true, jointCompound: true, sealants: true }, supportsPlies: true, isFramedWall: true },
+            'fiber-cement': { name: 'Fiber Cement Board', types: ['Ordinary', 'Moisture-Resistant', 'Exterior Grade'], thicknesses: ['4.5', '6', '9', '12', '16'], dimensions: ['1200 x 2400 mm', '1200 x 3000 mm'], unit: 'panels', unitArea: 2.88, productivityRate: 10, accessories: { studs: true, tracks: true, screws: true, jointCompound: true, sealants: true }, supportsPlies: true, isFramedWall: true },
+            'cement-board': { name: 'Cement Board', types: ['Standard Tile Backer', 'Moisture/Mold Resistant', 'Heavy-Duty'], thicknesses: ['6', '9', '12', '16'], dimensions: ['1200 x 2400 mm'], unit: 'panels', unitArea: 2.88, productivityRate: 9, accessories: { studs: true, tracks: true, screws: true, jointCompound: true, sealants: true }, supportsPlies: true, isFramedWall: true },
+            'calcium-silicate': { name: 'Calcium Silicate Board', types: ['Standard', 'Moisture-Resistant', 'Fire-Resistant', 'Acoustic'], thicknesses: ['6', '9', '12', '15'], dimensions: ['1200 x 2400 mm', '600 x 1200 mm'], unit: 'panels', unitArea: 2.88, productivityRate: 11, accessories: { studs: true, tracks: true, screws: true, jointCompound: true, sealants: true }, supportsPlies: true, isFramedWall: true },
+            'mgo': { name: 'Magnesium Oxide Board', types: ['Standard', 'Moisture/Mold-Resistant', 'Fire Resistant'], thicknesses: ['6', '9', '12', '15'], dimensions: ['1200 x 2400 mm'], unit: 'panels', unitArea: 2.88, productivityRate: 10, accessories: { studs: true, tracks: true, screws: true, jointCompound: true, sealants: true }, supportsPlies: true, isFramedWall: true },
+            'plywood': { name: 'Plywood', types: ['Interior Grade', 'Marine Plywood', 'Phenolic Film-Faced', 'Acoustic'], thicknesses: ['3', '6', '9', '12', '15', '18', '25'], dimensions: ['1220 x 2440 mm'], unit: 'sheets', unitArea: 2.9768, productivityRate: 15, accessories: { studs: true, tracks: true, screws: true, jointCompound: true, sealants: true }, supportsPlies: true, isFramedWall: true },
+            'mdf': { name: 'MDF', types: ['Standard MDF', 'Moisture-Resistant MDF', 'Fire-Retardant MDF'], thicknesses: ['3', '6', '9', '12', '15', '18', '25'], dimensions: ['1220 x 2440 mm'], unit: 'sheets', unitArea: 2.9768, productivityRate: 14, accessories: { studs: true, tracks: true, screws: true, jointCompound: true, sealants: true }, supportsPlies: true, isFramedWall: true },
+            'particle-board': { name: 'Particle Board', types: ['Standard', 'Laminated', 'Moisture-Resistant'], thicknesses: ['9', '12', '15', '18'], dimensions: ['1220 x 2440 mm'], unit: 'sheets', unitArea: 2.9768, productivityRate: 13, accessories: { studs: true, tracks: true, screws: true, jointCompound: true, sealants: true }, supportsPlies: true, isFramedWall: true },
+            'osb': { name: 'OSB', types: ['Standard', 'Exterior Grade', 'Fire-Resistant'], thicknesses: ['9', '12', '15', '18'], dimensions: ['1220 x 2440 mm'], unit: 'sheets', unitArea: 2.9768, productivityRate: 12, accessories: { studs: true, tracks: true, screws: true, jointCompound: true, sealants: true }, supportsPlies: true, isFramedWall: true }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initTabs();
+            const form = document.getElementById('calculatorForm');
+            if (!form) {
+                displayError('Internal error: Form not found');
+                return;
+            }
+            form.addEventListener('submit', calculateResults);
+            addMaterial();
+        });
+
+        function initTabs() {
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.getAttribute('data-tab')}-tab`).classList.add('active');
+                });
+            });
+        }
+
+        function addMaterial() {
+            materialCount++;
+            const container = document.getElementById('materials-container');
+            const materialCard = document.createElement('div');
+            materialCard.className = 'material-card';
+            materialCard.id = `material-${materialCount}`;
+            materialCard.innerHTML = `
+                <div class="material-header">
+                    <h3>Material Layer ${materialCount}</h3>
+                    <button class="remove-material" onclick="removeMaterial(${materialCount})">Remove</button>
+                </div>
+                <label>Material Type:
+                    <select id="materialType-${materialCount}" onchange="updateMaterialOptions(${materialCount})" title="Select the type of material">
+                        <option value="">Select Material</option>
+                        ${Object.keys(materialConfig).map(key => `<option value="${key}">${materialConfig[key].name}</option>`).join('')}
+                    </select>
+                </label>
+                <label>Type:
+                    <select id="materialTypeDetail-${materialCount}" title="Select the specific type of material">
+                        <option value="">Select Type</option>
+                    </select>
+                </label>
+                <label>Thickness (mm):
+                    <select id="materialThickness-${materialCount}" title="Select the thickness of the material">
+                        <option value="">Select Thickness</option>
+                    </select>
+                </label>
+                <label>Dimension:
+                    <select id="materialDimension-${materialCount}" title="Select the dimension of the material">
+                        <option value="">Select Dimension</option>
+                    </select>
+                </label>
+                <label>Cost per Unit (${document.getElementById('currency')?.value || 'PHP'}):
+                    <input type="number" id="materialCost-${materialCount}" step="0.01" min="0" value="0" title="Cost per unit of the material" required>
+                </label>
+                <label>Waste Factor (%):
+                    <input type="number" id="wasteFactor-${materialCount}" step="1" min="0" max="50" value="5" title="Percentage of waste factor" required>
+                </label>
+                <div class="side-selection">
+                    <div class="side-box">
+                        <label><input type="checkbox" id="side1-${materialCount}" checked onchange="toggleSideOptions(${materialCount}, 1)"> Side 1</label>
+                        <div class="side-plies" id="side1-plies-${materialCount}">
+                            <label>Number of Plies:
+                                <input type="number" id="side1-plies-count-${materialCount}" step="1" min="1" value="1" title="Number of plies for side 1">
+                            </label>
+                        </div>
+                    </div>
+                    <div class="side-box">
+                        <label><input type="checkbox" id="side2-${materialCount}" checked onchange="toggleSideOptions(${materialCount}, 2)"> Side 2</label>
+                        <div class="side-plies" id="side2-plies-${materialCount}">
+                            <label>Number of Plies:
+                                <input type="number" id="side2-plies-count-${materialCount}" step="1" min="1" value="1" title="Number of plies for side 2">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(materialCard);
+            updateMaterialOptions(materialCount);
+        }
+
+        function removeMaterial(index) {
+            const materialCard = document.getElementById(`material-${index}`);
+            if (materialCard) {
+                materialCard.remove();
+                materialCount = Math.max(0, materialCount - 1);
+                const cards = document.querySelectorAll('.material-card');
+                cards.forEach((card, i) => {
+                    card.querySelector('h3').textContent = `Material Layer ${i + 1}`;
+                    card.id = `material-${i + 1}`;
+                    card.querySelector('button').setAttribute('onclick', `removeMaterial(${i + 1})`);
+                    card.querySelectorAll('select, input').forEach(input => {
+                        const id = input.id.replace(/\d+/, i + 1);
+                        input.id = id;
+                        if (input.tagName === 'SELECT' && input.onchange) {
+                            input.onchange = new Function(`updateMaterialOptions(${i + 1})`);
+                        }
+                    });
+                });
+            }
+        }
+
+        function updateMaterialOptions(index) {
+            const materialType = document.getElementById(`materialType-${index}`).value;
+            const typeSelect = document.getElementById(`materialTypeDetail-${index}`);
+            const thicknessSelect = document.getElementById(`materialThickness-${index}`);
+            const dimensionSelect = document.getElementById(`materialDimension-${index}`);
+
+            typeSelect.innerHTML = '<option value="">Select Type</option>';
+            thicknessSelect.innerHTML = '<option value="">Select Thickness</option>';
+            dimensionSelect.innerHTML = '<option value="">Select Dimension</option>';
+
+            if (materialType && materialConfig[materialType]) {
+                const config = materialConfig[materialType];
+                config.types.forEach(type => {
+                    typeSelect.innerHTML += `<option value="${type}">${type}</option>`;
+                });
+                config.thicknesses.forEach(thickness => {
+                    thicknessSelect.innerHTML += `<option value="${thickness}">${thickness} mm</option>`;
+                });
+                config.dimensions.forEach(dimension => {
+                    dimensionSelect.innerHTML += `<option value="${dimension}">${dimension}</option>`;
+                });
+            }
+        }
+
+        function toggleSideOptions(materialIndex, sideNumber) {
+            const sideCheckbox = document.getElementById(`side${sideNumber}-${materialIndex}`);
+            const sidePlies = document.getElementById(`side${sideNumber}-plies-${materialIndex}`);
+            sidePlies.style.display = sideCheckbox.checked ? 'block' : 'none';
+        }
+
+        function calculateResults(event) {
+            event.preventDefault();
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = '';
+
+            // Wall parameters
+            const length = parseFloat(document.getElementById('length').value) || 0;
+            const height = parseFloat(document.getElementById('height').value) || 0;
+            const doorArea = parseFloat(document.getElementById('doorArea').value) || 0;
+            const windowArea = parseFloat(document.getElementById('windowArea').value) || 0;
+            const wallArea = (length * height) - (doorArea + windowArea);
+
+            if (wallArea <= 0) {
+                displayError('Wall area must be greater than zero. Please check your inputs.');
+                return;
+            }
+
+            let totalProductivityRate = 0;
+            const materials = [];
+            for (let i = 1; i <= materialCount; i++) {
+                const materialType = document.getElementById(`materialType-${i}`)?.value;
+                if (materialType && materialConfig[materialType]) {
+                    const config = materialConfig[materialType];
+                    const wasteFactor = parseFloat(document.getElementById(`wasteFactor-${i}`).value) / 100 || 0;
+                    const costPerUnit = parseFloat(document.getElementById(`materialCost-${i}`).value) || 0;
+                    const side1Checked = document.getElementById(`side1-${i}`).checked;
+                    const side2Checked = document.getElementById(`side2-${i}`).checked;
+                    const side1Plies = side1Checked ? parseInt(document.getElementById(`side1-plies-count-${i}`).value) || 1 : 0;
+                    const side2Plies = side2Checked ? parseInt(document.getElementById(`side2-plies-count-${i}`).value) || 1 : 0;
+                    const totalPlies = side1Plies + side2Plies;
+
+                    if (totalPlies === 0) {
+                        displayError(`Material Layer ${i}: At least one side must be selected with at least one ply.`);
+                        return;
+                    }
+
+                    const quantity = Math.ceil(wallArea / config.unitArea) * (1 + wasteFactor) * totalPlies;
+                    materials.push({
+                        type: config.name,
+                        quantity,
+                        costPerUnit,
+                        totalCost: quantity * costPerUnit,
+                        productivityRate: config.productivityRate,
+                        side1Plies,
+                        side2Plies
+                    });
+                    totalProductivityRate += config.productivityRate / materialCount;
+                }
+            }
+
+            if (materials.length === 0) {
+                displayError('Please add at least one material layer.');
+                return;
+            }
+
+            const currency = document.getElementById('currency').value || 'PHP';
+            const currencySymbol = { 'PHP': '₱', 'USD': '$', 'EUR': '€', 'JPY': '¥' }[currency] || '₱';
+
+            // Update wall parameters
+            document.getElementById('wallLengthResult').textContent = `${length} m`;
+            document.getElementById('wallHeightResult').textContent = `${height} m`;
+            document.getElementById('doorAreaResult').textContent = `${doorArea} m²`;
+            document.getElementById('windowAreaResult').textContent = `${windowArea} m²`;
+            document.getElementById('wallArea').textContent = `${wallArea.toFixed(2)} m²`;
+
+            // Material summary
+            let materialResultsHtml = '<ul>';
+            let totalMaterialCost = 0;
+            materials.forEach(mat => {
+                materialResultsHtml += `<li>${mat.type}: ${mat.quantity.toFixed(2)} ${materialConfig[Object.keys(materialConfig).find(key => materialConfig[key].name === mat.type)].unit} (Cost: ${currencySymbol}${mat.totalCost.toFixed(2)}) - Side 1: ${mat.side1Plies} plies, Side 2: ${mat.side2Plies} plies</li>`;
+                totalMaterialCost += mat.totalCost;
+            });
+            materialResultsHtml += '</ul>';
+            document.getElementById('materialResults').innerHTML = materialResultsHtml;
+            document.getElementById('materialCostResult').textContent = totalMaterialCost.toFixed(2);
+            document.getElementById('materialCostSqm').textContent = (totalMaterialCost / wallArea).toFixed(2);
+            document.getElementById('currencySymbolMaterial').textContent = currencySymbol;
+            document.getElementById('currencySymbolMaterialSqm').textContent = currencySymbol;
+
+            // Accessory calculations
+            const studCost = parseFloat(document.getElementById('studCost').value) || 0;
+            const trackCost = parseFloat(document.getElementById('trackCost').value) || 0;
+            const screwCost = parseFloat(document.getElementById('screwCost').value) || 0;
+            const jointCompoundCost = parseFloat(document.getElementById('jointCompoundCost').value) || 0;
+            const sealantCost = parseFloat(document.getElementById('sealantCost').value) || 0;
+
+            let totalAccessoryCost = 0;
+            let accessoryResultsHtml = '<ul>';
+            let totalStudQty = 0, totalTrackQty = 0, totalScrewQty = 0, totalJointCompoundQty = 0, totalSealantQty = 0;
+            materials.forEach(mat => {
+                const config = materialConfig[Object.keys(materialConfig).find(key => materialConfig[key].name === mat.type)];
+                const totalPlies = mat.side1Plies + mat.side2Plies;
+                if (totalPlies > 0) {
+                    const studQty = Math.ceil(length / 0.6) * height * totalPlies;
+                    const trackQty = 2 * length * totalPlies;
+                    const screwQty = Math.ceil(wallArea * 25) * totalPlies;
+                    const jointCompoundQty = wallArea * 0.5 * totalPlies;
+                    const sealantQty = length * 0.1 * totalPlies;
+                    totalStudQty += studQty;
+                    totalTrackQty += trackQty;
+                    totalScrewQty += screwQty;
+                    totalJointCompoundQty += jointCompoundQty;
+                    totalSealantQty += sealantQty;
+                    totalAccessoryCost += (studQty * studCost) + (trackQty * trackCost) + (screwQty * screwCost) + (jointCompoundQty * jointCompoundCost) + (sealantQty * sealantCost);
+                }
+            });
+            accessoryResultsHtml += `<li>Studs: ${totalStudQty.toFixed(2)} m (Cost: ${currencySymbol}${(totalStudQty * studCost).toFixed(2)})</li>`;
+            accessoryResultsHtml += `<li>Tracks: ${totalTrackQty.toFixed(2)} m (Cost: ${currencySymbol}${(totalTrackQty * trackCost).toFixed(2)})</li>`;
+            accessoryResultsHtml += `<li>Screws: ${totalScrewQty.toFixed(2)} pieces (Cost: ${currencySymbol}${(totalScrewQty * screwCost).toFixed(2)})</li>`;
+            accessoryResultsHtml += `<li>Joint Compound: ${totalJointCompoundQty.toFixed(2)} kg (Cost: ${currencySymbol}${(totalJointCompoundQty * jointCompoundCost).toFixed(2)})</li>`;
+            accessoryResultsHtml += `<li>Sealant: ${totalSealantQty.toFixed(2)} tubes (Cost: ${currencySymbol}${(totalSealantQty * sealantCost).toFixed(2)})</li>`;
+            accessoryResultsHtml += '</ul>';
+            document.getElementById('accessoryResults').innerHTML = accessoryResultsHtml;
+            document.getElementById('accessoryCostResult').textContent = totalAccessoryCost.toFixed(2);
+            document.getElementById('accessoryCostSqm').textContent = (totalAccessoryCost / wallArea).toFixed(2);
+            document.getElementById('currencySymbolAccessory').textContent = currencySymbol;
+            document.getElementById('currencySymbolAccessorySqm').textContent = currencySymbol;
+
+            // Labor calculations
+            const laborCostPerSqm = parseFloat(document.getElementById('laborCost').value) || 0;
+            const numLaborers = parseInt(document.getElementById('laborers').value) || 1;
+            const prepTime = parseFloat(document.getElementById('prepTime').value) || 0;
+            const cleanupTime = parseFloat(document.getElementById('cleanupTime').value) || 0;
+            const contingencyPercent = parseFloat(document.getElementById('contingency').value) / 100 || 0;
+            const overheadPercent = parseFloat(document.getElementById('overheadPercent').value) / 100 || 0;
+            const equipmentPercent = parseFloat(document.getElementById('equipmentPercent').value) / 100 || 0;
+            const profitMarginPercent = parseFloat(document.getElementById('profitMargin').value) / 100 || 0;
+
+            const laborCostTotal = wallArea * laborCostPerSqm;
+            const installTime = wallArea / totalProductivityRate;
+            const totalDays = (prepTime + installTime + cleanupTime) / numLaborers;
+
+            document.getElementById('laborersResult').textContent = numLaborers;
+            document.getElementById('productivityRate').textContent = `${totalProductivityRate.toFixed(2)} m²/day`;
+            document.getElementById('prepTimeResult').textContent = `${prepTime.toFixed(2)} days`;
+            document.getElementById('installTime').textContent = `${installTime.toFixed(2)} days`;
+            document.getElementById('cleanupTimeResult').textContent = `${cleanupTime.toFixed(2)} days`;
+            document.getElementById('totalDays').textContent = `${totalDays.toFixed(2)} days`;
+            document.getElementById('laborCostResult').textContent = laborCostTotal.toFixed(2);
+            document.getElementById('laborCostSqm').textContent = laborCostPerSqm.toFixed(2);
+            document.getElementById('currencySymbolLabor').textContent = currencySymbol;
+            document.getElementById('currencySymbolLaborSqm').textContent = currencySymbol;
+
+            // Additional costs
+            const baseCost = totalMaterialCost + totalAccessoryCost + laborCostTotal;
+            const contingencyCost = baseCost * contingencyPercent;
+            const overheadCost = baseCost * overheadPercent;
+            const equipmentCost = baseCost * equipmentPercent;
+            const profitCost = (baseCost + contingencyCost + overheadCost + equipmentCost) * profitMarginPercent;
+            const totalCost = baseCost + contingencyCost + overheadCost + equipmentCost + profitCost;
+
+            document.getElementById('contingencyCostResult').textContent = contingencyCost.toFixed(2);
+            document.getElementById('contingencyCostSqm').textContent = (contingencyCost / wallArea).toFixed(2);
+            document.getElementById('currencySymbolContingency').textContent = currencySymbol;
+            document.getElementById('currencySymbolContingencySqm').textContent = currencySymbol;
+            document.getElementById('contingencyCostRow').style.display = contingencyCost > 0 ? 'table-row' : 'none';
+
+            document.getElementById('overheadCostResult').textContent = overheadCost.toFixed(2);
+            document.getElementById('overheadCostSqm').textContent = (overheadCost / wallArea).toFixed(2);
+            document.getElementById('currencySymbolOverhead').textContent = currencySymbol;
+            document.getElementById('currencySymbolOverheadSqm').textContent = currencySymbol;
+
+            document.getElementById('equipmentCostResult').textContent = equipmentCost.toFixed(2);
+            document.getElementById('equipmentCostSqm').textContent = (equipmentCost / wallArea).toFixed(2);
+            document.getElementById('currencySymbolEquipment').textContent = currencySymbol;
+            document.getElementById('currencySymbolEquipmentSqm').textContent = currencySymbol;
+
+            document.getElementById('profitCostResult').textContent = profitCost.toFixed(2);
+            document.getElementById('profitCostSqm').textContent = (profitCost / wallArea).toFixed(2);
+            document.getElementById('currencySymbolProfit').textContent = currencySymbol;
+            document.getElementById('currencySymbolProfitSqm').textContent = currencySymbol;
+
+            document.getElementById('totalCost').textContent = totalCost.toFixed(2);
+            document.getElementById('totalCostSqm').textContent = (totalCost / wallArea).toFixed(2);
+            document.getElementById('currencySymbolTotal').textContent = currencySymbol;
+            document.getElementById('currencySymbolTotalSqm').textContent = currencySymbol;
+
+            document.getElementById('results').style.display = 'block';
+            resultsData = {
+                materials,
+                accessories: {
+                    studs: totalStudQty,
+                    tracks: totalTrackQty,
+                    screws: totalScrewQty,
+                    jointCompound: totalJointCompoundQty,
+                    sealant: totalSealantQty,
+                    totalCost: totalAccessoryCost
+                },
+                labor: {
+                    totalCost: laborCostTotal,
+                    laborers: numLaborers,
+                    productivityRate: totalProductivityRate,
+                    prepTime,
+                    installTime,
+                    cleanupTime,
+                    totalDays
+                },
+                costs: {
+                    total: totalCost,
+                    material: totalMaterialCost,
+                    accessory: totalAccessoryCost,
+                    labor: laborCostTotal,
+                    contingency: contingencyCost,
+                    overhead: overheadCost,
+                    equipment: equipmentCost,
+                    profit: profitCost
+                },
+                wallArea
+            };
+        }
+
+        function displayError(message) {
+            const messageDiv = document.getElementById('message');
+            messageDiv.innerHTML = `<div class="error">${message}</div>`;
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function downloadPDF() {
+            if (!window.jspdf || !resultsData || !resultsData.materials || resultsData.materials.length === 0) {
+                displayError('PDF generation failed. Ensure calculations are performed and the page is fully loaded.');
+                return;
+            }
+
+            const currency = document.getElementById('currency').value || 'PHP';
+            const currencySymbol = { 'PHP': '₱', 'USD': '$', 'EUR': '€', 'JPY': '¥' }[currency] || '₱';
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setProperties({
+                title: 'Framed Wall Materials Calculation Report',
+                subject: 'Construction Materials Estimation',
+                author: document.getElementById('preparedBy').value || 'Unknown',
+                keywords: 'construction, materials, calculator, estimation',
+                creator: 'Framed Wall Materials Calculator'
+            });
+
+            doc.setFontSize(18);
+            doc.setTextColor(40, 40, 40);
+            doc.text('Framed Wall Materials Calculator Results', 105, 20, { align: 'center' });
+
+            doc.setDrawColor(200, 200, 200);
+            doc.line(10, 25, 200, 25);
+
+            doc.setFontSize(12);
+            let y = 35;
+            doc.setFont(undefined, 'bold');
+            doc.text('Project Information', 10, y);
+            doc.setFont(undefined, 'normal');
+            y += 8;
+            doc.text(`Project Name: ${document.getElementById('projectName').value || 'N/A'}`, 10, y);
+            doc.text(`Date: ${document.getElementById('date').value || 'N/A'}`, 110, y);
+            y += 7;
+            doc.text(`Location: ${document.getElementById('projectLocation').value || 'N/A'}`, 10, y);
+            doc.text(`Prepared By: ${document.getElementById('preparedBy').value || 'N/A'}`, 110, y);
+            y += 7;
+            doc.text(`Client: ${document.getElementById('clientName').value || 'N/A'}`, 10, y);
+            doc.text(`Company: ${document.getElementById('companyName').value || 'N/A'}`, 110, y);
+            y += 15;
+
+            doc.setFont(undefined, 'bold');
+            doc.text('Wall Parameters', 10, y);
+            doc.setFont(undefined, 'normal');
+            y += 8;
+            doc.text(`Length: ${document.getElementById('wallLengthResult').textContent || 'N/A'}`, 10, y);
+            doc.text(`Height: ${document.getElementById('wallHeightResult').textContent || 'N/A'}`, 60, y);
+            doc.text(`Door Area: ${document.getElementById('doorAreaResult').textContent || 'N/A'}`, 110, y);
+            doc.text(`Window Area: ${document.getElementById('windowAreaResult').textContent || 'N/A'}`, 160, y);
+            y += 7;
+            doc.text(`Total Wall Area: ${document.getElementById('wallArea').textContent || 'N/A'}`, 10, y);
+            y += 15;
+
+            doc.setFont(undefined, 'bold');
+            doc.text('Material Summary', 10, y);
+            doc.setFont(undefined, 'normal');
+            y += 8;
+
+            const materialsTable = {
+                head: [['Material', 'Quantity', 'Plies (Side 1 / Side 2)', 'Cost']],
+                body: resultsData.materials.map(mat => [
+                    mat.type,
+                    `${mat.quantity.toFixed(2)} ${materialConfig[Object.keys(materialConfig).find(key => materialConfig[key].name === mat.type)].unit}`,
+                    `${mat.side1Plies} / ${mat.side2Plies}`,
+                    `${currencySymbol}${mat.totalCost.toFixed(2)}`
+                ])
+            };
+
+            doc.autoTable({
+                startY: y,
+                head: materialsTable.head,
+                body: materialsTable.body,
+                theme: 'grid',
+                headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
+                styles: { fontSize: 10, cellPadding: 3 },
+                margin: { left: 10, right: 10 }
+            });
+
+            y = doc.lastAutoTable.finalY + 10;
+            if (y > 250) { doc.addPage(); y = 20; }
+
+            doc.setFont(undefined, 'bold');
+            doc.text('Accessory Materials', 10, y);
+            doc.setFont(undefined, 'normal');
+            y += 8;
+
+            const accessoriesTable = {
+                head: [['Accessory', 'Quantity', 'Cost']],
+                body: [
+                    ['Studs', `${resultsData.accessories.studs.toFixed(2)} m`, `${currencySymbol}${(resultsData.accessories.studs * parseFloat(document.getElementById('studCost').value)).toFixed(2)}`],
+                    ['Tracks', `${resultsData.accessories.tracks.toFixed(2)} m`, `${currencySymbol}${(resultsData.accessories.tracks * parseFloat(document.getElementById('trackCost').value)).toFixed(2)}`],
+                    ['Screws', `${resultsData.accessories.screws.toFixed(2)} pieces`, `${currencySymbol}${(resultsData.accessories.screws * parseFloat(document.getElementById('screwCost').value)).toFixed(2)}`],
+                    ['Joint Compound', `${resultsData.accessories.jointCompound.toFixed(2)} kg`, `${currencySymbol}${(resultsData.accessories.jointCompound * parseFloat(document.getElementById('jointCompoundCost').value)).toFixed(2)}`],
+                    ['Sealant', `${resultsData.accessories.sealant.toFixed(2)} tubes`, `${currencySymbol}${(resultsData.accessories.sealant * parseFloat(document.getElementById('sealantCost').value)).toFixed(2)}`]
+                ]
+            };
+
+            doc.autoTable({
+                startY: y,
+                head: accessoriesTable.head,
+                body: accessoriesTable.body,
+                theme: 'grid',
+                headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
+                styles: { fontSize: 10, cellPadding: 3 },
+                margin: { left: 10, right: 10 }
+            });
+
+            y = doc.lastAutoTable.finalY + 10;
+            if (y > 250) { doc.addPage(); y = 20; }
+
+            doc.setFont(undefined, 'bold');
+            doc.text('Cost Summary', 10, y);
+            doc.setFont(undefined, 'normal');
+            y += 8;
+
+            const costTable = {
+                head: [['Item', 'Cost', 'Cost/m²']],
+                body: [
+                    ['Materials', `${currencySymbol}${document.getElementById('materialCostResult').textContent || '0.00'}`, `${currencySymbol}${document.getElementById('materialCostSqm').textContent || '0.00'}`],
+                    ['Accessories', `${currencySymbol}${document.getElementById('accessoryCostResult').textContent || '0.00'}`, `${currencySymbol}${document.getElementById('accessoryCostSqm').textContent || '0.00'}`],
+                    ['Labor', `${currencySymbol}${document.getElementById('laborCostResult').textContent || '0.00'}`, `${currencySymbol}${document.getElementById('laborCostSqm').textContent || '0.00'}`],
+                    ['Contingency', `${currencySymbol}${document.getElementById('contingencyCostResult').textContent || '0.00'}`, `${currencySymbol}${document.getElementById('contingencyCostSqm').textContent || '0.00'}`],
+                    ['Overhead', `${currencySymbol}${document.getElementById('overheadCostResult').textContent || '0.00'}`, `${currencySymbol}${document.getElementById('overheadCostSqm').textContent || '0.00'}`],
+                    ['Equipment', `${currencySymbol}${document.getElementById('equipmentCostResult').textContent || '0.00'}`, `${currencySymbol}${document.getElementById('equipmentCostSqm').textContent || '0.00'}`],
+                    ['Profit', `${currencySymbol}${document.getElementById('profitCostResult').textContent || '0.00'}`, `${currencySymbol}${document.getElementById('profitCostSqm').textContent || '0.00'}`],
+                    ['Total', `${currencySymbol}${document.getElementById('totalCost').textContent || '0.00'}`, `${currencySymbol}${document.getElementById('totalCostSqm').textContent || '0.00'}`]
+                ]
+            };
+
+            doc.autoTable({
+                startY: y,
+                head: costTable.head,
+                body: costTable.body,
+                theme: 'grid',
+                headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
+                styles: { fontSize: 10, cellPadding: 3 },
+                margin: { left: 10, right: 10 },
+                footStyles: { fillColor: [44, 62, 80], textColor: 255, fontStyle: 'bold' }
+            });
+
+            y = doc.lastAutoTable.finalY + 10;
+            if (y > 250) { doc.addPage(); y = 20; }
+
+            doc.setFont(undefined, 'bold');
+            doc.text('Labor Details', 10, y);
+            doc.setFont(undefined, 'normal');
+            y += 8;
+            doc.text(`Number of Laborers: ${document.getElementById('laborersResult').textContent || 'N/A'}`, 10, y);
+            doc.text(`Productivity Rate: ${document.getElementById('productivityRate').textContent || 'N/A'}`, 80, y);
+            y += 7;
+            doc.text(`Preparation Time: ${document.getElementById('prepTimeResult').textContent || 'N/A'}`, 10, y);
+            doc.text(`Installation Time: ${document.getElementById('installTime').textContent || 'N/A'}`, 80, y);
+            y += 7;
+            doc.text(`Cleanup Time: ${document.getElementById('cleanupTimeResult').textContent || 'N/A'}`, 10, y);
+            doc.text(`Total Duration: ${document.getElementById('totalDays').textContent || 'N/A'}`, 80, y);
+
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Page ${i} of ${pageCount}`, 200, 290, { align: 'right' });
+                doc.text(`Generated on ${new Date().toLocaleDateString()}`, 10, 290);
+            }
+
+            doc.save('framed_wall_materials_calculation.pdf');
+        }
+    </script>
+</body>
+</html>
