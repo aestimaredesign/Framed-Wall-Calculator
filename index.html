@@ -872,18 +872,19 @@
         }
 
         function downloadPDF() {
-    // Debug logging to check library and data availability
-    console.log('jsPDF available:', typeof jspdf !== 'undefined');
-    console.log('resultsData:', resultsData);
-
-    if (!jspdf || !resultsData || !resultsData.materials || resultsData.materials.length === 0) {
-        displayError('PDF generation failed. Ensure calculations are performed and the page is fully loaded.');
+    // Check if jsPDF is available
+    if (typeof window.jspdf === 'undefined') {
+        displayError('PDF library not loaded. Please refresh the page and try again.');
         return;
     }
 
-    const currency = document.getElementById('currency').value || 'PHP';
-    const currencySymbol = { 'PHP': '₱', 'USD': '$', 'EUR': '€', 'JPY': '¥' }[currency] || '₱';
-    const { jsPDF } = jspdf; // Correctly destructure jsPDF from the jspdf object
+    // Check if resultsData is available
+    if (!resultsData || !resultsData.materials || resultsData.materials.length === 0) {
+        displayError('Please calculate the results first before generating a PDF.');
+        return;
+    }
+
+    const { jsPDF } = window.jspdf; // Correctly destructure jsPDF from the jspdf object
     const doc = new jsPDF();
 
     doc.setProperties({
@@ -894,9 +895,8 @@
         creator: 'Framed Wall Materials Calculator'
     });
 
-    // Set uniform font to Arial Narrow
-    doc.addFont('helvetica', 'Arial Narrow', 'normal');
-    doc.setFont('Arial Narrow');
+    // Set font to standard Helvetica
+    doc.setFont("helvetica");
 
     doc.setFontSize(18);
     doc.setTextColor(40, 40, 40);
@@ -943,9 +943,8 @@
         head: wallParamsTable.head,
         body: wallParamsTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' },
-        bodyStyles: { font: 'Arial Narrow' },
-        styles: { fontSize: 10, cellPadding: 3, font: 'Arial Narrow' },
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 3 },
         margin: { left: 10, right: 10 }
     });
 
@@ -958,6 +957,8 @@
     doc.setFont(undefined, 'normal');
     y += 8;
 
+    const currency = document.getElementById('currency').value || 'PHP';
+    const currencySymbol = { 'PHP': '₱', 'USD': '$', 'EUR': '€', 'JPY': '¥' }[currency] || '₱';
     const materialsTable = {
         head: [['Material', 'Quantity', 'Plies (Side 1 / Side 2)', 'Cost']],
         body: resultsData.materials.map(mat => [
@@ -973,9 +974,8 @@
         head: materialsTable.head,
         body: materialsTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' },
-        bodyStyles: { font: 'Arial Narrow' },
-        styles: { fontSize: 10, cellPadding: 3, font: 'Arial Narrow' },
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 3 },
         margin: { left: 10, right: 10 }
     });
 
@@ -1004,9 +1004,8 @@
         head: accessoriesTable.head,
         body: accessoriesTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' },
-        bodyStyles: { font: 'Arial Narrow' },
-        styles: { fontSize: 10, cellPadding: 3, font: 'Arial Narrow' },
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 3 },
         margin: { left: 10, right: 10 }
     });
 
@@ -1038,11 +1037,10 @@
         head: costTable.head,
         body: costTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' },
-        bodyStyles: { font: 'Arial Narrow' },
-        styles: { fontSize: 10, cellPadding: 3, font: 'Arial Narrow' },
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 3 },
         margin: { left: 10, right: 10 },
-        footStyles: { fillColor: [44, 62, 80], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' }
+        footStyles: { fillColor: [44, 62, 80], textColor: 255, fontStyle: 'bold' }
     });
 
     y = doc.lastAutoTable.finalY + 10;
@@ -1072,9 +1070,8 @@
         head: laborDetailsTable.head,
         body: laborDetailsTable.body,
         theme: 'grid',
-        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold', font: 'Arial Narrow' },
-        bodyStyles: { font: 'Arial Narrow' },
-        styles: { fontSize: 10, cellPadding: 3, font: 'Arial Narrow' },
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 3 },
         margin: { left: 10, right: 10 }
     });
 
