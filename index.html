@@ -872,14 +872,18 @@
         }
 
         function downloadPDF() {
-    if (!window.jspdf || !resultsData || !resultsData.materials || resultsData.materials.length === 0) {
+    // Debug logging to check library and data availability
+    console.log('jsPDF available:', typeof jspdf !== 'undefined');
+    console.log('resultsData:', resultsData);
+
+    if (!jspdf || !resultsData || !resultsData.materials || resultsData.materials.length === 0) {
         displayError('PDF generation failed. Ensure calculations are performed and the page is fully loaded.');
         return;
     }
 
     const currency = document.getElementById('currency').value || 'PHP';
     const currencySymbol = { 'PHP': '₱', 'USD': '$', 'EUR': '€', 'JPY': '¥' }[currency] || '₱';
-    const { jsPDF } = window.jspdf;
+    const { jsPDF } = jspdf; // Correctly destructure jsPDF from the jspdf object
     const doc = new jsPDF();
 
     doc.setProperties({
