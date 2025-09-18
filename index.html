@@ -890,18 +890,37 @@
     doc.text(`Company: ${document.getElementById('companyName').value || 'N/A'}`, 110, y);
     y += 15;
 
+    // Wall Parameters Table
     doc.setFont(undefined, 'bold');
     doc.text('Wall Parameters', 10, y);
     doc.setFont(undefined, 'normal');
     y += 8;
-    doc.text(`Length: ${document.getElementById('wallLengthResult').textContent || 'N/A'}`, 10, y);
-    doc.text(`Height: ${document.getElementById('wallHeightResult').textContent || 'N/A'}`, 60, y);
-    doc.text(`Door Area: ${document.getElementById('doorAreaResult').textContent || 'N/A'}`, 110, y);
-    doc.text(`Window Area: ${document.getElementById('windowAreaResult').textContent || 'N/A'}`, 160, y);
-    y += 7;
-    doc.text(`Total Wall Area: ${document.getElementById('wallArea').textContent || 'N/A'}`, 10, y);
-    y += 15;
 
+    const wallParamsTable = {
+        head: [['Parameter', 'Value']],
+        body: [
+            ['Length', `${document.getElementById('wallLengthResult').textContent || 'N/A'}`],
+            ['Height', `${document.getElementById('wallHeightResult').textContent || 'N/A'}`],
+            ['Door Area', `${document.getElementById('doorAreaResult').textContent || 'N/A'}`],
+            ['Window Area', `${document.getElementById('windowAreaResult').textContent || 'N/A'}`],
+            ['Total Wall Area', `${document.getElementById('wallArea').textContent || 'N/A'}`]
+        ]
+    };
+
+    doc.autoTable({
+        startY: y,
+        head: wallParamsTable.head,
+        body: wallParamsTable.body,
+        theme: 'grid',
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 3 },
+        margin: { left: 10, right: 10 }
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
+    if (y > 250) { doc.addPage(); y = 20; }
+
+    // Material Summary Table
     doc.setFont(undefined, 'bold');
     doc.text('Material Summary', 10, y);
     doc.setFont(undefined, 'normal');
@@ -930,6 +949,7 @@
     y = doc.lastAutoTable.finalY + 10;
     if (y > 250) { doc.addPage(); y = 20; }
 
+    // Accessory Materials Table
     doc.setFont(undefined, 'bold');
     doc.text('Accessory Materials', 10, y);
     doc.setFont(undefined, 'normal');
@@ -959,6 +979,7 @@
     y = doc.lastAutoTable.finalY + 10;
     if (y > 250) { doc.addPage(); y = 20; }
 
+    // Cost Summary Table
     doc.setFont(undefined, 'bold');
     doc.text('Cost Summary', 10, y);
     doc.setFont(undefined, 'normal');
@@ -992,20 +1013,36 @@
     y = doc.lastAutoTable.finalY + 10;
     if (y > 250) { doc.addPage(); y = 20; }
 
+    // Labor Details Table
     doc.setFont(undefined, 'bold');
     doc.text('Labor Details', 10, y);
     doc.setFont(undefined, 'normal');
     y += 8;
-    doc.text(`Number of Laborers: ${document.getElementById('laborersResult').textContent || 'N/A'}`, 10, y);
-    doc.text(`Daily Wage per Laborer: ${currencySymbol}${parseFloat(document.getElementById('laborCost').value).toFixed(2)}`, 80, y);
-    y += 7;
-    doc.text(`Productivity Rate: ${document.getElementById('productivityRate').textContent || 'N/A'}`, 10, y);
-    doc.text(`Preparation Time: ${document.getElementById('prepTimeResult').textContent || 'N/A'}`, 80, y);
-    y += 7;
-    doc.text(`Installation Time: ${document.getElementById('installTime').textContent || 'N/A'}`, 10, y);
-    doc.text(`Cleanup Time: ${document.getElementById('cleanupTimeResult').textContent || 'N/A'}`, 80, y);
-    y += 7;
-    doc.text(`Total Duration: ${document.getElementById('totalDays').textContent || 'N/A'}`, 10, y);
+
+    const laborDetailsTable = {
+        head: [['Detail', 'Value']],
+        body: [
+            ['Number of Laborers', `${document.getElementById('laborersResult').textContent || 'N/A'}`],
+            ['Daily Wage per Laborer', `${currencySymbol}${parseFloat(document.getElementById('laborCost').value).toFixed(2)}`],
+            ['Productivity Rate', `${document.getElementById('productivityRate').textContent || 'N/A'}`],
+            ['Preparation Time', `${document.getElementById('prepTimeResult').textContent || 'N/A'}`],
+            ['Installation Time', `${document.getElementById('installTime').textContent || 'N/A'}`],
+            ['Cleanup Time', `${document.getElementById('cleanupTimeResult').textContent || 'N/A'}`],
+            ['Total Duration', `${document.getElementById('totalDays').textContent || 'N/A'}`]
+        ]
+    };
+
+    doc.autoTable({
+        startY: y,
+        head: laborDetailsTable.head,
+        body: laborDetailsTable.body,
+        theme: 'grid',
+        headStyles: { fillColor: [52, 152, 219], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 10, cellPadding: 3 },
+        margin: { left: 10, right: 10 }
+    });
+
+    y = doc.lastAutoTable.finalY + 10;
 
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
